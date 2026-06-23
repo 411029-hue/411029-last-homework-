@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>讀書進度自我檢定</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#eef2ff',
+                100: '#e0e7ff',
+                200: '#c7d2fe',
+                300: '#a5b4fc',
+                400: '#818cf8',
+                500: '#6366f1',
+                600: '#4f46e5',
+                700: '#4338ca',
+                800: '#3730a3',
+                900: '#312e81'
+              }
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        background: radial-gradient(circle at top, rgba(99, 102, 241, 0.15), transparent 35%),
+          radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.12), transparent 25%),
+          #f8fafc;
+      }
+      .backdrop-blur {
+        backdrop-filter: blur(10px);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-slate-800">
+    <!-- 導覽列 -->
+    <header class="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur px-4 py-4 shadow-sm">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-3">
+        <div>
+          <p class="text-sm uppercase tracking-[0.24em] text-slate-500">進度檢測系統</p>
+          <h1 class="text-2xl font-semibold text-slate-900">單頁式讀書進度自我檢定</h1>
+        </div>
+        <button id="settingsBtn" class="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-500 hover:text-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-300">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.04A1.65 1.65 0 0 0 9 5.09V5a2 2 0 0 1 4 0v.09c.06.53.32 1.03.72 1.4a1.65 1.65 0 0 0 1.82.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.04a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+          </svg>
+          設定
+        </button>
+      </div>
+    </header>
+
+    <!-- 內容區 -->
+    <main class="mx-auto max-w-6xl px-4 py-8">
+      <!-- 主畫面 -->
+      <section id="mainView" class="space-y-6">
+        <div class="rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-xl shadow-slate-200/80">
+          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p class="text-sm uppercase tracking-[0.24em] text-brand-600">我的讀書進度</p>
+              <h2 class="text-3xl font-semibold text-slate-900">各科進度一目了然</h2>
+            </div>
+            <p class="max-w-xl text-slate-600">點擊任一科目卡片檢視或編輯進度，所有資料會自動儲存在本機瀏覽器中。</p>
+          </div>
+        </div>
+
+        <div id="cardGrid" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"></div>
+      </section>
+
+      <!-- 管理頁面 -->
+      <section id="manageView" class="hidden space-y-6">
+        <div class="rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-xl shadow-slate-200/80">
+          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p class="text-sm uppercase tracking-[0.24em] text-brand-600">科目設定管理</p>
+              <h2 class="text-3xl font-semibold text-slate-900">新增、刪除或調整你的科目</h2>
+            </div>
+            <button id="backBtn" class="inline-flex items-center gap-2 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-300">
+              返回主畫面
+            </button>
+          </div>
+        </div>
+
+        <div class="grid gap-5 xl:grid-cols-[1.4fr_0.9fr]">
+          <div class="rounded-3xl border border-slate-200/70 bg-white p-6 shadow-lg shadow-slate-200/70">
+            <h3 class="mb-4 text-xl font-semibold text-slate-900">目前科目清單</h3>
+            <ul id="subjectList" class="space-y-3"></ul>
+          </div>
+
+          <div class="rounded-3xl border border-slate-200/70 bg-white p-6 shadow-lg shadow-slate-200/70">
+            <h3 class="mb-4 text-xl font-semibold text-slate-900">新增科目</h3>
+            <form id="addSubjectForm" class="space-y-4">
+              <label class="block text-sm font-medium text-slate-700">科目名稱</label>
+              <input id="newSubjectInput" type="text" placeholder="例如：物理、國文" class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100" />
+              <button type="submit" class="w-full rounded-2xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-300">新增科目</button>
+              <p class="text-sm text-slate-500">新增後即可回到主畫面，點擊卡片更新進度。</p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 編輯進度 Modal -->
+    <div id="editModal" class="fixed inset-0 z-30 hidden items-center justify-center bg-slate-950/30 p-4 backdrop-blur-sm">
+      <div class="w-full max-w-xl rounded-3xl border border-slate-200/80 bg-white p-6 shadow-2xl shadow-slate-900/10">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm uppercase tracking-[0.24em] text-brand-600">進度編輯</p>
+            <h3 id="modalSubjectName" class="mt-2 text-2xl font-semibold text-slate-900">科目名稱</h3>
+          </div>
+          <button id="closeModalBtn" class="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form id="editProgressForm" class="mt-6 space-y-5">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700">目前讀書進度 (%)</label>
+            <input id="progressInput" type="number" min="0" max="100" class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100" />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700">備註（選填）</label>
+            <textarea id="noteInput" rows="3" class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100" placeholder="例如：已完成第5章、準備考試..."></textarea>
+          </div>
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <button type="button" id="cancelModalBtn" class="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-100">取消</button>
+            <button type="submit" class="rounded-2xl bg-brand-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-300">儲存變更</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // localStorage 名稱
+      const STORAGE_KEY = 'studyProgressSubjects';
+
+      // 目前用途：編輯中的科目索引
+      let activeSubjectIndex = null;
+      let subjects = [];
+
+      const mainView = document.getElementById('mainView');
+      const manageView = document.getElementById('manageView');
+      const cardGrid = document.getElementById('cardGrid');
+      const subjectList = document.getElementById('subjectList');
+      const settingsBtn = document.getElementById('settingsBtn');
+      const backBtn = document.getElementById('backBtn');
+      const editModal = document.getElementById('editModal');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      const cancelModalBtn = document.getElementById('cancelModalBtn');
+      const modalSubjectName = document.getElementById('modalSubjectName');
+      const progressInput = document.getElementById('progressInput');
+      const noteInput = document.getElementById('noteInput');
+      const editProgressForm = document.getElementById('editProgressForm');
+      const addSubjectForm = document.getElementById('addSubjectForm');
+      const newSubjectInput = document.getElementById('newSubjectInput');
+
+      // 初始化資料，若 localStorage 沒資料則建立預設科目
+      function loadSubjects() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          try {
+            subjects = JSON.parse(raw);
+          } catch (error) {
+            subjects = [];
+          }
+        }
+
+        if (!Array.isArray(subjects) || subjects.length === 0) {
+          subjects = [
+            { name: '國文', progress: 0, note: '開始你的閱讀計畫。' },
+            { name: '英文', progress: 0, note: '追蹤單字與閱讀。' },
+            { name: '數學', progress: 0, note: '練習題目與理解概念。' }
+          ];
+          saveSubjects();
+        }
+      }
+
+      // 儲存資料到 localStorage
+      function saveSubjects() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(subjects));
+      }
+
+      // 渲染主畫面卡片
+      function renderMainView() {
+        cardGrid.innerHTML = '';
+
+        if (subjects.length === 0) {
+          cardGrid.innerHTML = `
+            <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
+              目前沒有科目，請前往設定新增科目。
+            </div>
+          `;
+          return;
+        }
+
+        subjects.forEach((subject, index) => {
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'group rounded-3xl border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-brand-300 hover:shadow-lg';
+          card.innerHTML = `
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-sm uppercase tracking-[0.24em] text-slate-500">科目</p>
+                <h3 class="mt-3 text-2xl font-semibold text-slate-900">${escapeHtml(subject.name)}</h3>
+              </div>
+              <div class="rounded-3xl bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700">${subject.progress}%</div>
+            </div>
+            <div class="mt-6 space-y-3">
+              <div class="h-3 overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full rounded-full bg-gradient-to-r from-brand-500 to-blue-500 transition-all" style="width: ${subject.progress}%"></div>
+              </div>
+              <p class="text-sm text-slate-600">${escapeHtml(subject.note || '點擊此卡片進行編輯。')}</p>
+            </div>
+          `;
+          card.addEventListener('click', () => openEditModal(index));
+          cardGrid.appendChild(card);
+        });
+      }
+
+      // 渲染管理頁面清單
+      function renderManageView() {
+        subjectList.innerHTML = '';
+
+        if (subjects.length === 0) {
+          subjectList.innerHTML = `<li class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-5 text-center text-slate-500">目前尚未新增科目</li>`;
+          return;
+        }
+
+        subjects.forEach((subject, index) => {
+          const item = document.createElement('li');
+          item.className = 'flex items-center justify-between gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-4';
+          item.innerHTML = `
+            <div>
+              <p class="text-base font-semibold text-slate-900">${escapeHtml(subject.name)}</p>
+              <p class="text-sm text-slate-500">目前進度：${subject.progress}%</p>
+            </div>
+            <button type="button" class="rounded-full bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-rose-200 hover:text-rose-800" aria-label="刪除科目 ${escapeHtml(subject.name)}">刪除</button>
+          `;
+          item.querySelector('button').addEventListener('click', () => {
+            if (confirm(`確定要刪除「${subject.name}」嗎？`)) {
+              deleteSubject(index);
+            }
+          });
+          subjectList.appendChild(item);
+        });
+      }
+
+      // 進入管理頁面
+      function showManageView() {
+        mainView.classList.add('hidden');
+        manageView.classList.remove('hidden');
+        renderManageView();
+      }
+
+      // 返回主畫面
+      function showMainView() {
+        manageView.classList.add('hidden');
+        mainView.classList.remove('hidden');
+      }
+
+      // 開啟編輯進度 Modal
+      function openEditModal(index) {
+        activeSubjectIndex = index;
+        const subject = subjects[index];
+        modalSubjectName.textContent = subject.name;
+        progressInput.value = subject.progress;
+        noteInput.value = subject.note || '';
+        editModal.classList.remove('hidden');
+      }
+
+      // 關閉 Modal
+      function closeModal() {
+        activeSubjectIndex = null;
+        editModal.classList.add('hidden');
+      }
+
+      // 新增科目
+      function addSubject(name) {
+        const trimmedName = name.trim();
+        if (!trimmedName) {
+          alert('請輸入科目名稱。');
+          return;
+        }
+
+        const duplicate = subjects.some(subject => subject.name.toLowerCase() === trimmedName.toLowerCase());
+        if (duplicate) {
+          alert('此科目名稱已存在，請使用其他名稱。');
+          return;
+        }
+
+        subjects.push({ name: trimmedName, progress: 0, note: '尚未開始紀錄進度。' });
+        saveSubjects();
+        renderMainView();
+        renderManageView();
+        newSubjectInput.value = '';
+        alert(`已新增科目：${trimmedName}`);
+      }
+
+      // 刪除指定科目
+      function deleteSubject(index) {
+        subjects.splice(index, 1);
+        saveSubjects();
+        renderMainView();
+        renderManageView();
+      }
+
+      // 防止 XSS，轉義文字內容
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // 綁定事件
+      settingsBtn.addEventListener('click', showManageView);
+      backBtn.addEventListener('click', showMainView);
+      closeModalBtn.addEventListener('click', closeModal);
+      cancelModalBtn.addEventListener('click', closeModal);
+      editModal.addEventListener('click', (event) => {
+        if (event.target === editModal) {
+          closeModal();
+        }
+      });
+
+      editProgressForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (activeSubjectIndex === null) return;
+
+        const progressValue = Number(progressInput.value);
+        if (Number.isNaN(progressValue) || progressValue < 0 || progressValue > 100) {
+          alert('請輸入 0 到 100 之間的進度值。');
+          return;
+        }
+
+        subjects[activeSubjectIndex].progress = progressValue;
+        subjects[activeSubjectIndex].note = noteInput.value.trim();
+        saveSubjects();
+        renderMainView();
+        closeModal();
+      });
+
+      addSubjectForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        addSubject(newSubjectInput.value);
+      });
+
+      // 启动应用
+      loadSubjects();
+      renderMainView();
+    </script>
+  </body>
+</html>
